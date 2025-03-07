@@ -1,0 +1,6 @@
+.vs
+bin
+obj
+*.user
+src/log
+src/PG.FileTransfer.Sftp.UI/log
