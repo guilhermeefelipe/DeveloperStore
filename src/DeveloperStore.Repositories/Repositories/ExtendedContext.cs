@@ -15,7 +15,7 @@ public interface IExtendedContext<ContextType> where ContextType : DbContext
 {
     ContextType Context { get; }
     Task<IDbContextTransaction> BeginTransactionAsync();
-    Task<IPagedList<Projection>> GetPagedListAsync<Table, Projection>(int page = 1, int pageSize = 10, string order = "") where Table : SimpleEntityBase;
+    Task<IPagedList<Projection>> GetPagedListAsync<Table, Projection>(int page = 1, int pageSize = 10, string order = "", Expression<Func<Table, bool>>? whereExpression = null) where Table : SimpleEntityBase;
     Task<Projection?> GetAsync<Table, Projection>(int? id = null) where Table : SimpleEntityBase;
     Task<int> CreateAsync<Table>(object data) where Table : SimpleEntityBase, new();
     Task UpdateAsync<Table>(int id, object data) where Table : SimpleEntityBase, new();
@@ -39,14 +39,16 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
     /// </summary>
     /// <typeparam name="Table">A tabela de origem</typeparam>
     /// <typeparam name="Projection">O tipo de dados a ser retornado para cada registro</typeparam>
-    /// <param name="orderBy">Expressão de ordenação</param>
-    /// <param name="currentPage">Para paginação; informa a página de registros a ser retornada</param>
-    /// <param name="pageSize">Para paginação; informa quantos registros deve ter em cada página</param>
+    /// <param name="whereExpression">Expressão opcional para filtrar os registros</param>
+    /// <param name="order">Expressão de ordenação</param>
+    /// <param name="page">Número da página para paginação</param>
+    /// <param name="pageSize">Quantidade de registros por página</param>
     /// <returns>Uma página da lista de registros</returns>
     public async Task<IPagedList<Projection>> GetPagedListAsync<Table, Projection>(
         int page = 1,
         int pageSize = 10,
-        string order = ""
+        string order = "",
+        Expression<Func<Table, bool>>? whereExpression = null
     ) where Table : SimpleEntityBase
     {
         if (page <= 0)
@@ -57,16 +59,20 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
 
         var query = Context.Set<Table>().AsNoTracking();
 
+        if (whereExpression != null)
+        {
+            query = query.Where(whereExpression);
+        }
+
         var total = await query.CountAsync();
 
-        // Handle ordering
         if (!string.IsNullOrEmpty(order))
         {
             var orderByClauses = order.Split(',')
                 .Select(o => o.Trim())
                 .ToList();
 
-            IOrderedQueryable<Table> orderedQuery = null;
+            IOrderedQueryable<Table>? orderedQuery = null;
 
             foreach (var clause in orderByClauses)
             {
@@ -74,7 +80,7 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
                 var propertyName = descending ? clause.Substring(0, clause.Length - 5).Trim() : clause;
 
                 if (!OrderByValidator.TryParseOrderBy(propertyName, typeof(Table), out var property, out var isDescending))
-                    {
+                {
                     throw new ArgumentException($"O campo de ordenação '{propertyName}' não é válido.");
                 }
 
@@ -94,14 +100,12 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
                     lambda
                 );
 
-#pragma warning disable CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
                 orderedQuery = orderedQuery == null
                     ? query.Provider.CreateQuery<Table>(resultExpression) as IOrderedQueryable<Table>
                     : orderedQuery.Provider.CreateQuery<Table>(resultExpression) as IOrderedQueryable<Table>;
-#pragma warning restore CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
             }
 
-            query = orderedQuery ?? query; // If no ordering was applied, keep the original query
+            query = orderedQuery ?? query;
         }
 
         var items = await query

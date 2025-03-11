@@ -3,6 +3,8 @@ using DeveloperStore.Services.Addresses;
 using DeveloperStore.Services.Carts;
 using DeveloperStore.Services.Geolocations;
 using DeveloperStore.Services.Names;
+using DeveloperStore.Services.Products;
+using DeveloperStore.Services.Raties;
 using DeveloperStore.Services.Users;
 using Microsoft.Extensions.Configuration;
 
@@ -18,7 +20,9 @@ public static class Extensions
         services.AddScoped<IAddressesService, AddressesService>();
         services.AddScoped<IGeolocationsService, GeolocationsService>();
         services.AddScoped<INamesService, NamesService>();
-
+        services.AddScoped<IRatiesService, RatiesService>();
+        services.AddScoped<IProductsService, ProductsService>();
+        
         return services;
     }
 

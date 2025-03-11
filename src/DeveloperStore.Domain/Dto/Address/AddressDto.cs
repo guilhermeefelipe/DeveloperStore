@@ -1,6 +1,4 @@
 ﻿using DeveloperStore.Domain.Dto.Geolocation;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace DeveloperStore.Domain.Dto.Address;
 

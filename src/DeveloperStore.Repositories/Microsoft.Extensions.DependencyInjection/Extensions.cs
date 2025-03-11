@@ -3,6 +3,8 @@ using DeveloperStore.Repositories.Addresses;
 using DeveloperStore.Repositories.DbContexts;
 using DeveloperStore.Repositories.Geolocations;
 using DeveloperStore.Repositories.Names;
+using DeveloperStore.Repositories.Products;
+using DeveloperStore.Repositories.Raties;
 using DeveloperStore.Repositories.Repositories;
 using DeveloperStore.Repositories.Users;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +42,7 @@ public static class Extensions
         services.AddScoped<IAddressesRepository, AddressesRepository>();
         services.AddScoped<IGeolocationsRepository, GeolocationsRepository>();
         services.AddScoped<INamesRepository, NamesRepository>();
-
+        services.AddScoped<IRatiesRepository, RatiesRepository>();
+        services.AddScoped<IProductsRepository, ProductsRepository>();
     }
 }
