@@ -6,6 +6,7 @@ using DeveloperStore.Repositories.Names;
 using DeveloperStore.Repositories.Products;
 using DeveloperStore.Repositories.Raties;
 using DeveloperStore.Repositories.Repositories;
+using DeveloperStore.Repositories.Repositories.Carts;
 using DeveloperStore.Repositories.Users;
 using Microsoft.Extensions.Configuration;
 
@@ -44,5 +45,6 @@ public static class Extensions
         services.AddScoped<INamesRepository, NamesRepository>();
         services.AddScoped<IRatiesRepository, RatiesRepository>();
         services.AddScoped<IProductsRepository, ProductsRepository>();
+        services.AddScoped<ICartsRepository, CartsRepository>();
     }
 }

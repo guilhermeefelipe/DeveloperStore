@@ -39,7 +39,7 @@ public class ProductsRepository : IProductsRepository
     public async Task<IPagedList<T>> GetPagedListAsync<T>(int page, int pageSize, string order, string where)
     {
         Expression<Func<Product, bool>> whereCondition = x => x.Category.Contains(where);
-        return await context.GetPagedListAsync<Product, T>(page, pageSize, order);
+        return await context.GetPagedListAsync<Product, T>(page, pageSize, order, whereCondition);
     }
     public async Task<int> CreateAsync(object data)
         => await context.CreateAsync<Product>(data);

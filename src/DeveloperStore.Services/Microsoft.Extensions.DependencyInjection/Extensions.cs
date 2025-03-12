@@ -22,7 +22,8 @@ public static class Extensions
         services.AddScoped<INamesService, NamesService>();
         services.AddScoped<IRatiesService, RatiesService>();
         services.AddScoped<IProductsService, ProductsService>();
-        
+        services.AddScoped<ICartsService, CartsService>();
+
         return services;
     }
 

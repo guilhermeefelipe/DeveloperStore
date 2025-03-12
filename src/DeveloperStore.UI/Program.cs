@@ -1,3 +1,4 @@
+using DeveloperStore.Services.Services;
 using Newtonsoft.Json.Converters;
 using Serilog;
 using System.Globalization;
@@ -27,6 +28,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.Services.MigrateDatabaseAsync().Wait();
 

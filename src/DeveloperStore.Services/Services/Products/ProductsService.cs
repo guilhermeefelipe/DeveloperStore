@@ -1,11 +1,13 @@
 ﻿using DeveloperStore.Domain.Dto.Address;
 using DeveloperStore.Domain.Dto.Product;
+using DeveloperStore.Domain.Entities;
 using DeveloperStore.Repositories.Addresses;
 using DeveloperStore.Repositories.Geolocations;
 using DeveloperStore.Repositories.Names;
 using DeveloperStore.Repositories.Products;
 using DeveloperStore.Repositories.Raties;
 using DeveloperStore.Services.Raties;
+using DeveloperStore.Services.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +41,8 @@ public class ProductsService : IProductsService
 
     public async Task<ProductCompleteDto?> CreateAsync(ProductCreateEditRequestDto model)
     {
-        ArgumentNullException.ThrowIfNull(model);
+        if (model == null)
+            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
 
         var ratingId = await ratiesService.CreateAsync(model.Rating);
 
@@ -57,11 +60,13 @@ public class ProductsService : IProductsService
     }
     public async Task<ProductCompleteDto?> UpdateAsync(int id, ProductCreateEditRequestDto model)
     {
-        ArgumentNullException.ThrowIfNull(model);
+        if (model == null)
+            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
 
         var Product = await ProductsRepository.GetAsync<ProductCompleteDto>(id);
 
-        ArgumentNullException.ThrowIfNull(Product);
+        if (Product == null)
+            throw new CustomException("ProductNotFound", "Product not found", $"No Product found with these id:{id}");
 
         await ratiesService.UpdateAsync(Product.Rating.Id, model.Rating);
 

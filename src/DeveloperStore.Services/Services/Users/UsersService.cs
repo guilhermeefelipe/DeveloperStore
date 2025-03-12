@@ -1,10 +1,13 @@
 ﻿using DeveloperStore.Domain.Dto.Address;
+using DeveloperStore.Domain.Dto.User;
 using DeveloperStore.Domain.Dto.Users;
 using DeveloperStore.Repositories.Addresses;
 using DeveloperStore.Repositories.Geolocations;
 using DeveloperStore.Repositories.Names;
 using DeveloperStore.Repositories.Repositories.Carts;
 using DeveloperStore.Repositories.Users;
+using DeveloperStore.Services.Services;
+using Newtonsoft.Json.Linq;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 
 namespace DeveloperStore.Services.Users;
@@ -16,6 +19,7 @@ public interface IUsersService
     Task<bool> DeleteAsync(int id);
     Task<UserDto?> GetAsync(int id);    
     Task<IPagedList<UserDto>> GetPagedListAsync(int page, int pageSize, string order);
+    Task<string> ValidateLogin(UserLoginDto model);
 
 }
 
@@ -40,7 +44,7 @@ public class UsersService : IUsersService
     public async Task<UserDto?> CreateAsync(UserCreateEditRequestDto model)
     {
         if (model == null)
-            throw new ArgumentNullException(nameof(model));
+            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
 
         var geolocationId = await geolocationsRepository.CreateAsync(model.Address.Geolocation);
 
@@ -72,12 +76,12 @@ public class UsersService : IUsersService
     public async Task<UserDto?> UpdateAsync(int id, UserCreateEditRequestDto model)
     {
         if (model == null)
-            throw new ArgumentNullException(nameof(model));
+            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
 
         var user = await usersRepository.GetAsync<UserCompleteDto>(id);
 
         if (user == null)
-            throw new ArgumentNullException(nameof(user));
+            throw new CustomException("UserNotFound", "User not found", $"No user found with these id:{id}");
 
         await geolocationsRepository.UpdateAsync(user.Address.Geolocation.Id, model.Address.Geolocation);
 
@@ -116,4 +120,13 @@ public class UsersService : IUsersService
     public async Task<IPagedList<UserDto>> GetPagedListAsync(int page, int pageSize, string order)
         => await usersRepository.GetPagedListAsync<UserDto>(page, pageSize, order);
 
+    public async Task<string> ValidateLogin(UserLoginDto model)
+    {
+        var user = await usersRepository.GetAsync<UserDto>(model.Username, CryptoHelper.Encrypt(model.Password));
+
+        if (user is null)
+            throw new CustomException("UserNotFound", "User not found", "No user found with these credentials");
+
+        return TokenHelper.GenerateToken(user);
+    }
 }

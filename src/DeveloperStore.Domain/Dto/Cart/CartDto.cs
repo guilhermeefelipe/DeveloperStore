@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DeveloperStore.Domain.Dto.Base;
+using DeveloperStore.Domain.Dto.Product;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DeveloperStore.Domain.Dto.Carts
+namespace DeveloperStore.Domain.Dto.Cart;
+
+public class CartDto : SimpleDtoBase
 {
-    internal class CartDto
-    {
-    }
+    public int UserId { get; set; }
+    public string Date { get; set; } = string.Empty;
+
+    public List<ProductCartDto> ProductList { get; set; } = default!;
 }

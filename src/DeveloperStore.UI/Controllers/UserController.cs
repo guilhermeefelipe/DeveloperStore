@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace DeveloperStore.UI.Controllers;
 
-[Route("[controller]")]
+[Route("users")]
 [ApiController]
 public class UsersController : ControllerBase
 {
