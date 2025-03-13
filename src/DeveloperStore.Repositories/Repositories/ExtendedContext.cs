@@ -34,16 +34,6 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
 
     #region GET
 
-    /// <summary>
-    /// Obtém uma lista paginada de registros a partir de uma tabela
-    /// </summary>
-    /// <typeparam name="Table">A tabela de origem</typeparam>
-    /// <typeparam name="Projection">O tipo de dados a ser retornado para cada registro</typeparam>
-    /// <param name="whereExpression">Expressão opcional para filtrar os registros</param>
-    /// <param name="order">Expressão de ordenação</param>
-    /// <param name="page">Número da página para paginação</param>
-    /// <param name="pageSize">Quantidade de registros por página</param>
-    /// <returns>Uma página da lista de registros</returns>
     public async Task<IPagedList<Projection>> GetPagedListAsync<Table, Projection>(
         int page = 1,
         int pageSize = 10,
@@ -51,11 +41,9 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
         Expression<Func<Table, bool>>? whereExpression = null
     ) where Table : SimpleEntityBase
     {
-        if (page <= 0)
-            throw new ArgumentOutOfRangeException(nameof(page));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
 
-        if (pageSize <= 0)
-            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
 
         var query = Context.Set<Table>().AsNoTracking();
 
@@ -76,12 +64,9 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
 
             foreach (var clause in orderByClauses)
             {
-                var descending = clause.EndsWith(" desc", StringComparison.OrdinalIgnoreCase);
-                var propertyName = descending ? clause.Substring(0, clause.Length - 5).Trim() : clause;
-
-                if (!OrderByValidator.TryParseOrderBy(propertyName, typeof(Table), out var property, out var isDescending))
+                if (!OrderByValidator.TryParseOrderBy(clause, typeof(Table), out var property, out var isDescending))
                 {
-                    throw new ArgumentException($"O campo de ordenação '{propertyName}' não é válido.");
+                    throw new ArgumentException($"The sorting field '{clause}' is not valid.");
                 }
 
                 var parameter = Expression.Parameter(typeof(Table), "x");
@@ -92,6 +77,7 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
                     ? (isDescending ? "OrderByDescending" : "OrderBy")
                     : (isDescending ? "ThenByDescending" : "ThenBy");
 
+                // Aplica a ordenação
                 var resultExpression = Expression.Call(
                     typeof(Queryable),
                     orderMethod,
@@ -101,8 +87,8 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
                 );
 
                 orderedQuery = orderedQuery == null
-                    ? query.Provider.CreateQuery<Table>(resultExpression) as IOrderedQueryable<Table>
-                    : orderedQuery.Provider.CreateQuery<Table>(resultExpression) as IOrderedQueryable<Table>;
+                    ? (IOrderedQueryable<Table>)query.Provider.CreateQuery<Table>(resultExpression)
+                    : (IOrderedQueryable<Table>)orderedQuery.Provider.CreateQuery<Table>(resultExpression);
             }
 
             query = orderedQuery ?? query;
@@ -117,18 +103,6 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
         return new PagedList<Projection>(page, pageSize, total, items);
     }
 
-    /// <summary>
-    /// Retorna os dados de um registro de uma tabela a partir de seu ID ou a partir de uma expressão de filtro.
-    /// </summary>
-    /// <typeparam name="Table">A tabela de origem</typeparam>
-    /// <typeparam name="Projection">O tipo do objeto a ser retornado</typeparam>
-    /// <param name="id">O Id do registro. Pode ser nulo.</param>
-    /// <param name="where">O filtro para o registro. Pode ser nulo.</param>
-    /// <returns>
-    /// Retorna um objeto com os dados do registro atual (todas as propriedades do objeto cujo nome coincidir
-    /// com nomes de campo da tabela receberão os dados do registro) ou null caso o registro não seja encontrado.
-    /// </returns>
-    /// <exception cref="ArgumentException">Caso ambos os parâmetros sejam nulos ou inválidos.</exception>
     public async Task<Projection?> GetAsync<Table, Projection>(int? id = null)
         where Table : SimpleEntityBase
     {
@@ -150,12 +124,6 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
 
     #region POST
 
-    /// <summary>
-    /// Efetua a inclusão de um registro
-    /// </summary>
-    /// <typeparam name="Table">A tabela de destino</typeparam>
-    /// <param name="data">Os dados a serem incluídos no novo registro</param>
-    /// <returns>O ID do registro inserido</returns>
     public async Task<int> CreateAsync<Table>(object data) where Table : SimpleEntityBase, new()
     {
         if (data == null)
@@ -181,14 +149,7 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
     #endregion
 
     #region PUT
-    /// <summary>
-    /// Efetua a alteração de um registro
-    /// </summary>
-    /// <typeparam name="Table">A tabela de destino</typeparam>
-    /// <param name="id">O Id do registro a ser alterado</param>
-    /// <param name="data">Os dados a serem gravados para o registro</param>
-    /// <param name="auditInfo">Informações de auditoria</param>
-    /// <returns></returns>
+
     public async Task UpdateAsync<Table>(
         int id,
         object data
@@ -221,16 +182,6 @@ public class ExtendedContext<ContextType> : IExtendedContext<ContextType> where 
     #endregion
 
     #region DELETE
-    ///// <summary>
-    ///// Muda o valor do campo IsDeleted de um registro
-    ///// </summary>
-    ///// <typeparam name="Table">A tabela de destino</typeparam>
-    ///// <param name="context">O contexto do banco de dados</param>
-    ///// <param name="id">O ID do registro a ser atualizado</param>
-    ///// <returns>
-    ///// Valor lógico indicando se o registro foi modificado 
-    ///// (retorna falso caso o id não exista ou IsDeleted já tenha o valor informado)
-    ///// </returns>
     public async Task<bool> DeleteAsync<Table>(int id) where Table : SimpleEntityBase, new()
     {
         ArgumentOutOfRangeException.ThrowIfZero(id);
