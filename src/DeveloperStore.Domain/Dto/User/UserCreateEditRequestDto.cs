@@ -19,6 +19,6 @@ public class UserCreateEditRequestDto
     public NameDto Name { get; set; } = default!;
     public AddressDto Address { get; set; } = default!;
     public string Phone { get; set; } = string.Empty;
-    public Status Status { get; set; }
-    public Role Role { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }

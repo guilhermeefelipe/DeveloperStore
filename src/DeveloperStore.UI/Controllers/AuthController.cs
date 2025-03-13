@@ -24,9 +24,6 @@ public class AuthController : ControllerBase
 
         var token = await usersService.ValidateLogin(request);
 
-        if (token is null)
-            return BadRequest("Erro ao gerar token");
-
         return Ok(token);
     }
 }

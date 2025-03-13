@@ -1,11 +1,13 @@
 ﻿using DeveloperStore.Domain.Dto.Address;
 using DeveloperStore.Domain.Dto.Product;
+using DeveloperStore.Domain.Dto.Users;
 using DeveloperStore.Domain.Entities;
 using DeveloperStore.Repositories.Addresses;
 using DeveloperStore.Repositories.Geolocations;
 using DeveloperStore.Repositories.Names;
 using DeveloperStore.Repositories.Products;
 using DeveloperStore.Repositories.Raties;
+using DeveloperStore.Repositories.Users;
 using DeveloperStore.Services.Raties;
 using DeveloperStore.Services.Services;
 using System;
@@ -18,10 +20,10 @@ namespace DeveloperStore.Services.Products;
 
 public interface IProductsService
 {
-    Task<ProductCompleteDto?> CreateAsync(ProductCreateEditRequestDto model);
-    Task<ProductCompleteDto?> UpdateAsync(int id, ProductCreateEditRequestDto model);
+    Task<ProductDto?> CreateAsync(ProductCreateEditRequestDto model);
+    Task<ProductDto?> UpdateAsync(int id, ProductCreateEditRequestDto model);
     Task<bool> DeleteAsync(int id);
-    Task<ProductCompleteDto?> GetAsync(int id);
+    Task<ProductDto?> GetAsync(int id);
     Task<IPagedList<ProductDto>> GetPagedListAsync(int page, int pageSize, string order);
     Task<IPagedList<ProductDto>> GetPagedListAsync(int page, int pageSize, string order, string where);
     Task<IEnumerable<string>> GetCategoriesListAsync();
@@ -29,24 +31,21 @@ public interface IProductsService
 
 public class ProductsService : IProductsService
 {
-    private readonly IProductsRepository ProductsRepository;
+    private readonly IProductsRepository productsRepository;
     private readonly IRatiesService ratiesService;
 
-    public ProductsService(IProductsRepository ProductsRepository,
+    public ProductsService(IProductsRepository productsRepository,
                            IRatiesService ratiesService)
     {
-        this.ProductsRepository = ProductsRepository;
+        this.productsRepository = productsRepository;
         this.ratiesService = ratiesService;
     }
 
-    public async Task<ProductCompleteDto?> CreateAsync(ProductCreateEditRequestDto model)
+    public async Task<ProductDto?> CreateAsync(ProductCreateEditRequestDto model)
     {
-        if (model == null)
-            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
-
         var ratingId = await ratiesService.CreateAsync(model.Rating);
 
-        var productId = await ProductsRepository.CreateAsync(new ProductCreateEditDto
+        var productId = await productsRepository.CreateAsync(new ProductCreateEditDto
         {
             Category = model.Category,
             Description = model.Description,
@@ -58,42 +57,53 @@ public class ProductsService : IProductsService
 
         return await GetAsync(productId);
     }
-    public async Task<ProductCompleteDto?> UpdateAsync(int id, ProductCreateEditRequestDto model)
+    public async Task<ProductDto?> UpdateAsync(int id, ProductCreateEditRequestDto model)
     {
-        if (model == null)
-            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
+        var product = await productsRepository.GetAsync<ProductCompleteDto>(id);
 
-        var Product = await ProductsRepository.GetAsync<ProductCompleteDto>(id);
+        if (product is null)
+            throw new CustomException("ResourceNotFound", "Product not found", $"The product with ID {id} does not exist in our database");
 
-        if (Product == null)
-            throw new CustomException("ProductNotFound", "Product not found", $"No Product found with these id:{id}");
+        await ratiesService.UpdateAsync(product.Rating.Id, model.Rating);
 
-        await ratiesService.UpdateAsync(Product.Rating.Id, model.Rating);
-
-        await ProductsRepository.UpdateAsync(id, new ProductCreateEditDto
+        await productsRepository.UpdateAsync(id, new ProductCreateEditDto
         {
             Category = model.Category,
             Description = model.Description,
             Image = model.Image,
             Price = model.Price,
             Title = model.Title,
-            RatingId = Product.Rating.Id
+            RatingId = product.Rating.Id
         });
 
         return await GetAsync(id);
     }
 
-    public async Task<ProductCompleteDto?> GetAsync(int id)
-     => await ProductsRepository.GetAsync<ProductCompleteDto>(id);
+    public async Task<ProductDto?> GetAsync(int id)
+    {
+        var product = await productsRepository.GetAsync<ProductDto>(id);
+
+        if (product is null)
+            throw new CustomException("ResourceNotFound", "Product not found", $"The product with ID {id} does not exist in our database");
+
+        return product;
+    }
 
     public async Task<bool> DeleteAsync(int id)
-     => await ProductsRepository.DeleteAsync(id);
+    {
+        var product = await productsRepository.GetAsync<ProductCompleteDto>(id);
+
+        if (product is null)
+            throw new CustomException("ResourceNotFound", "Product not found", $"The product with ID {id} does not exist in our database");
+
+        return await productsRepository.DeleteAsync(id);
+    }
 
     public async Task<IPagedList<ProductDto>> GetPagedListAsync(int page, int pageSize, string order)
-        => await ProductsRepository.GetPagedListAsync<ProductDto>(page, pageSize, order);
+        => await productsRepository.GetPagedListAsync<ProductDto>(page, pageSize, order);
     public async Task<IPagedList<ProductDto>> GetPagedListAsync(int page, int pageSize, string order, string where)
-        => await ProductsRepository.GetPagedListAsync<ProductDto>(page, pageSize, order, where);
+        => await productsRepository.GetPagedListAsync<ProductDto>(page, pageSize, order, where);
 
     public async Task<IEnumerable<string>> GetCategoriesListAsync()
-        => await ProductsRepository.GetCategoriesListAsync();
+        => await productsRepository.GetCategoriesListAsync();
 }

@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DeveloperStore.Repositories.Migrations.PostgreSql
+namespace DeveloperStore.Repositories.Migrations.SqlServer
 {
     /// <inheritdoc />
     public partial class Initial_Migration : Migration
@@ -15,10 +14,10 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Geolocation",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Lat = table.Column<string>(type: "text", nullable: false),
-                    Long = table.Column<string>(type: "text", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Lat = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Long = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -29,10 +28,10 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Name",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Firstname = table.Column<string>(type: "text", nullable: false),
-                    Lastname = table.Column<string>(type: "text", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Lastname = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,10 +42,10 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Rating",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Rate = table.Column<decimal>(type: "numeric", nullable: false),
-                    Count = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Count = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -57,13 +56,13 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Address",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    City = table.Column<string>(type: "text", nullable: false),
-                    Street = table.Column<string>(type: "text", nullable: false),
-                    Number = table.Column<string>(type: "text", nullable: false),
-                    ZipCode = table.Column<string>(type: "text", nullable: false),
-                    GeolocationId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ZipCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GeolocationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -80,14 +79,14 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Product",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Category = table.Column<string>(type: "text", nullable: false),
-                    Image = table.Column<string>(type: "text", nullable: false),
-                    RatingId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RatingId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -104,16 +103,16 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "User",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
-                    NameId = table.Column<int>(type: "integer", nullable: false),
-                    AddressId = table.Column<int>(type: "integer", nullable: false),
-                    Phone = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NameId = table.Column<int>(type: "int", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -136,11 +135,11 @@ namespace DeveloperStore.Repositories.Migrations.PostgreSql
                 name: "Cart",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<string>(type: "text", nullable: false),
-                    Products = table.Column<string>(type: "text", maxLength: 2147483647, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Products = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: false)
                 },
                 constraints: table =>
                 {

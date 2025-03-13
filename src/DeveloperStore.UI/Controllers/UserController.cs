@@ -1,4 +1,6 @@
 ﻿using DeveloperStore.Domain.Dto.Users;
+using DeveloperStore.Domain.Entities;
+using DeveloperStore.Services.Services;
 using DeveloperStore.Services.Users;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -16,6 +18,28 @@ public class UsersController : ControllerBase
         this.usersService = usersService;
     }
 
+    [HttpGet()]
+    public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var list = await usersService.GetPagedListAsync(page, size, order);
+
+        return Ok(list);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetAsync(int id)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = await usersService.GetAsync(id);
+
+        return Ok(user);
+    }
+
     [HttpPost()]
     public async Task<ActionResult> CreateAsync([FromBody] UserCreateEditRequestDto request)
     {
@@ -25,29 +49,7 @@ public class UsersController : ControllerBase
         var user = await usersService.CreateAsync(request);
 
         if (user is null)
-            return BadRequest("Erro ao criar o usuario!");
-
-        return Ok(user);
-    }
-
-    [HttpGet()]
-    public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
-    {
-        var list = await usersService.GetPagedListAsync(page, size, order);
-        
-        if (!list.Items.Any())
-            return NotFound();
-
-        return Ok(list);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult> GetAsync(int id)
-    {
-        var user = await usersService.GetAsync(id);
-
-        if (user != null)
-            return NotFound();
+            throw new CustomException("CreateError", "Error creating user", "An error occurred while creating the user");
 
         return Ok(user);
     }
@@ -55,10 +57,13 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(int id, [FromBody] UserCreateEditRequestDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var user = await usersService.UpdateAsync(id, request);
 
         if (user is null)
-            return NotFound();
+            throw new CustomException("UpdateError", "Error updating user", "An error occurred while updating the user");
 
         return Ok(user);
     }
@@ -66,8 +71,11 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         await usersService.DeleteAsync(id);
 
-        return Ok();
+        return Ok("User deleted");
     }
 }

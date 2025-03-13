@@ -1,23 +1,26 @@
 ﻿using DeveloperStore.Domain.Dto.Name;
-using DeveloperStore.Domain.Dto.Users;
 using DeveloperStore.Repositories.Names;
 
 namespace DeveloperStore.Services.Names;
 
 public interface INamesService
 {
-    Task<int> CreateAsync(NameCreateEditDto model);
+    Task<int> CreateAsync(NameDto model);
+    Task UpdateAsync(int id, NameDto model);
 }
 
 public class NamesService : INamesService
 {
-    private readonly INamesRepository NamesRepository;
+    private readonly INamesRepository namesRepository;
 
-    public NamesService(INamesRepository NamesRepository)
+    public NamesService(INamesRepository namesRepository)
     {
-        this.NamesRepository = NamesRepository;
+        this.namesRepository = namesRepository;
     }
 
-    public async Task<int> CreateAsync(NameCreateEditDto model)
-        => await NamesRepository.CreateAsync(model);
+    public async Task<int> CreateAsync(NameDto model)
+        => await namesRepository.CreateAsync(model);
+
+    public async Task UpdateAsync(int id, NameDto model)
+    => await namesRepository.UpdateAsync(id, model);
 }

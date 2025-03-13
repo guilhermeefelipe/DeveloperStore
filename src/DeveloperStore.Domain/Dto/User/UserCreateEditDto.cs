@@ -19,7 +19,7 @@ public class UserCreateEditDto
     public int NameId { get; set; }
     public int AddressId { get; set; }
     public string Phone { get; set; } = string.Empty;
-    public Status Status { get; set; }
-    public Role Role { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 
 }

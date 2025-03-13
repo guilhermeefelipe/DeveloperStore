@@ -1,5 +1,6 @@
 ﻿using DeveloperStore.Domain.Dto.Cart;
 using DeveloperStore.Services.Carts;
+using DeveloperStore.Services.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeveloperStore.UI.Controllers;
@@ -8,11 +9,30 @@ namespace DeveloperStore.UI.Controllers;
 [ApiController]
 public class CartsController : ControllerBase
 {
-    private readonly ICartsService CartsService;
+    private readonly ICartsService cartsService;
 
-    public CartsController(ICartsService CartsService)
+    public CartsController(ICartsService cartsService)
     {
-        this.CartsService = CartsService;
+        this.cartsService = cartsService;
+    }
+
+    [HttpGet()]
+    public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
+    {
+        var list = await cartsService.GetPagedListAsync(page, size, order);
+
+        return Ok(list);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetAsync(int id)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var cart = await cartsService.GetAsync(id);
+
+        return Ok(cart);
     }
 
     [HttpPost()]
@@ -21,43 +41,21 @@ public class CartsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var Cart = await CartsService.CreateAsync(request);
+        var cart = await cartsService.CreateAsync(request);
 
-        if (Cart is null)
-            return BadRequest("Erro ao criar o usuario!");
+        if (cart is null)
+            throw new CustomException("CreateError", "Error creating cart", "An error occurred while creating the cart");
 
-        return Ok(Cart);
-    }
-
-    [HttpGet()]
-    public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
-    {
-        var list = await CartsService.GetPagedListAsync(page, size, order);
-
-        if (!list.Items.Any())
-            return NotFound();
-
-        return Ok(list);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult> GetAsync(int id)
-    {
-        var Cart = await CartsService.GetAsync(id);
-
-        if (Cart is null)
-            return NotFound();
-
-        return Ok(Cart);
+        return Ok(cart);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(int id, [FromBody] CartCreateEditRequestDto request)
     {
-        var Cart = await CartsService.UpdateAsync(id, request);
+        var Cart = await cartsService.UpdateAsync(id, request);
 
         if (Cart is null)
-            return NotFound();
+            throw new CustomException("UpdateError", "Error updating cart", "An error occurred while updating the cart");
 
         return Ok(Cart);
     }
@@ -65,8 +63,8 @@ public class CartsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
-        await CartsService.DeleteAsync(id);
+        await cartsService.DeleteAsync(id);
 
-        return Ok();
+        return Ok("Cart deleted");
     }
 }

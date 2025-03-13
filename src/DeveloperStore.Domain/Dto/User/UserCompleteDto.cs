@@ -13,6 +13,6 @@ public class UserCompleteDto : SimpleDtoBase
     public NameCompleteDto Name { get; set; } = default!;
     public AddressCompleteDto Address { get; set; } = default!;
     public string Phone { get; set; } = string.Empty;
-    public Status Status { get; set; }
-    public Role Role { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }

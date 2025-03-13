@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DeveloperStore.Repositories.Migrations.MySql
 {
     [DbContext(typeof(MySqlDbContext))]
-    [Migration("20250307020310_Initial_Migration")]
+    [Migration("20250312235627_Initial_Migration")]
     partial class Initial_Migration
     {
         /// <inheritdoc />
@@ -209,11 +209,13 @@ namespace DeveloperStore.Repositories.Migrations.MySql
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Username")
                         .IsRequired()

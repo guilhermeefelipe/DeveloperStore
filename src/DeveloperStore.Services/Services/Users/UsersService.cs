@@ -1,14 +1,11 @@
 ﻿using DeveloperStore.Domain.Dto.Address;
 using DeveloperStore.Domain.Dto.User;
 using DeveloperStore.Domain.Dto.Users;
-using DeveloperStore.Repositories.Addresses;
-using DeveloperStore.Repositories.Geolocations;
-using DeveloperStore.Repositories.Names;
-using DeveloperStore.Repositories.Repositories.Carts;
 using DeveloperStore.Repositories.Users;
+using DeveloperStore.Services.Addresses;
+using DeveloperStore.Services.Geolocations;
+using DeveloperStore.Services.Names;
 using DeveloperStore.Services.Services;
-using Newtonsoft.Json.Linq;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 
 namespace DeveloperStore.Services.Users;
 
@@ -26,29 +23,29 @@ public interface IUsersService
 public class UsersService : IUsersService
 {
     private readonly IUsersRepository usersRepository;
-    private readonly INamesRepository namesRepository;
-    private readonly IGeolocationsRepository geolocationsRepository;
-    private readonly IAddressesRepository addressesRepository;
+    private readonly INamesService namesService;
+    private readonly IGeolocationsService geolocationsService;
+    private readonly IAddressesService addressesService;
 
     public UsersService(IUsersRepository usersRepository,
-                        INamesRepository namesRepository,
-                        IGeolocationsRepository geolocationsRepository,
-                        IAddressesRepository addressesRepository)
+                        INamesService namesService,
+                        IGeolocationsService geolocationsService,
+                        IAddressesService addressesService)
     {
         this.usersRepository = usersRepository;
-        this.namesRepository = namesRepository;
-        this.geolocationsRepository = geolocationsRepository;
-        this.addressesRepository = addressesRepository;
+        this.namesService = namesService;
+        this.geolocationsService = geolocationsService;
+        this.addressesService = addressesService;
     }
 
     public async Task<UserDto?> CreateAsync(UserCreateEditRequestDto model)
     {
-        if (model == null)
-            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
+        EnumValidator.ValidateRole(model.Role);
+        EnumValidator.ValidateStatus(model.Status);
 
-        var geolocationId = await geolocationsRepository.CreateAsync(model.Address.Geolocation);
+        var geolocationId = await geolocationsService.CreateAsync(model.Address.Geolocation);
 
-        var addressId = await addressesRepository.CreateAsync(new AddressCreateEditDto
+        var addressId = await addressesService.CreateAsync(new AddressCreateEditDto
         {  
             City = model.Address.City,
             GeolocationId = geolocationId,
@@ -57,7 +54,7 @@ public class UsersService : IUsersService
             ZipCode = model.Address.ZipCode
         });
 
-        var nameId = await namesRepository.CreateAsync(model.Name);
+        var nameId = await namesService.CreateAsync(model.Name);
 
         var userId = await usersRepository.CreateAsync(new UserCreateEditDto
         {
@@ -75,17 +72,17 @@ public class UsersService : IUsersService
     }
     public async Task<UserDto?> UpdateAsync(int id, UserCreateEditRequestDto model)
     {
-        if (model == null)
-            throw new CustomException("InvalidRequest", "Request is invalid", "Request is not in the expected standard");
-
         var user = await usersRepository.GetAsync<UserCompleteDto>(id);
 
-        if (user == null)
-            throw new CustomException("UserNotFound", "User not found", $"No user found with these id:{id}");
+        if (user is null)
+            throw new CustomException("ResourceNotFound", "User not found", $"The user with ID {id} does not exist in our database");
 
-        await geolocationsRepository.UpdateAsync(user.Address.Geolocation.Id, model.Address.Geolocation);
+        EnumValidator.ValidateRole(model.Role);
+        EnumValidator.ValidateStatus(model.Status);
 
-        await addressesRepository.UpdateAsync(user.Address.Id, new AddressCreateEditDto
+        await geolocationsService.UpdateAsync(user.Address.Geolocation.Id, model.Address.Geolocation);
+
+        await addressesService.UpdateAsync(user.Address.Id, new AddressCreateEditDto
         {
             City = model.Address.City,
             GeolocationId = user.Address.Geolocation.Id,
@@ -94,7 +91,7 @@ public class UsersService : IUsersService
             ZipCode = model.Address.ZipCode
         });
 
-        await namesRepository.UpdateAsync(user.Name.Id, model.Name);
+        await namesService.UpdateAsync(user.Name.Id, model.Name);
 
         await usersRepository.UpdateAsync(id, new UserCreateEditDto
         {
@@ -112,10 +109,24 @@ public class UsersService : IUsersService
     }
 
     public async Task<UserDto?> GetAsync(int id)
-     => await usersRepository.GetAsync<UserDto>(id);
+    {
+        var user = await usersRepository.GetAsync<UserDto>(id);
+
+        if (user is null)
+            throw new CustomException("ResourceNotFound", "User not found", $"The user with ID {id} does not exist in our database");
+
+        return user;
+    }
 
     public async Task<bool> DeleteAsync(int id)
-     => await usersRepository.DeleteAsync(id);
+    {
+        var user = await usersRepository.GetAsync<UserCompleteDto>(id);
+
+        if (user is null)
+            throw new CustomException("ResourceNotFound", "User not found", $"The user with ID {id} does not exist in our database");
+
+       return await usersRepository.DeleteAsync(id);
+    }
 
     public async Task<IPagedList<UserDto>> GetPagedListAsync(int page, int pageSize, string order)
         => await usersRepository.GetPagedListAsync<UserDto>(page, pageSize, order);
@@ -125,7 +136,7 @@ public class UsersService : IUsersService
         var user = await usersRepository.GetAsync<UserDto>(model.Username, CryptoHelper.Encrypt(model.Password));
 
         if (user is null)
-            throw new CustomException("UserNotFound", "User not found", "No user found with these credentials");
+            throw new CustomException("ResourceNotFound", "User not found", "No user found with these credentials");
 
         return TokenHelper.GenerateToken(user);
     }
