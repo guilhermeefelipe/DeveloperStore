@@ -1,4 +1,5 @@
 using DeveloperStore.Services.Services;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Serilog;
 using System.Globalization;
@@ -23,7 +24,11 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddDeveloperStoreServices(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.EnableAnnotations();
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "DeveloperStore", Version = "v1" });
+});
 
 var app = builder.Build();
 
@@ -42,12 +47,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

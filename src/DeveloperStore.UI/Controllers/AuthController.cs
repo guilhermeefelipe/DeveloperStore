@@ -2,6 +2,7 @@
 using DeveloperStore.Domain.Dto.User;
 using DeveloperStore.Services.Users;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace DeveloperStore.UI.Controllers;
 
@@ -17,6 +18,8 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost()]
+    [SwaggerOperation(Summary = "Authenticate a user")]
+
     public async Task<ActionResult> CreateAsync([FromBody] UserLoginDto request)
     {
         if (!ModelState.IsValid)

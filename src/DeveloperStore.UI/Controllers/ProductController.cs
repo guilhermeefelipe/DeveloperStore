@@ -3,6 +3,7 @@ using DeveloperStore.Domain.Entities;
 using DeveloperStore.Services.Products;
 using DeveloperStore.Services.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace DeveloperStore.UI.Controllers;
 
@@ -19,6 +20,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet()]
+    [SwaggerOperation(Summary = "Retrieve a list of all products")]
     public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
     {
         if (!ModelState.IsValid)
@@ -30,6 +32,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Retrieve a specific product by ID")]
     public async Task<ActionResult> GetAsync(int id)
     {
         if (!ModelState.IsValid)
@@ -41,6 +44,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost()]
+    [SwaggerOperation(Summary = "Add a new product")]
     public async Task<ActionResult> CreateAsync([FromBody] ProductCreateEditRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -55,6 +59,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [SwaggerOperation(Summary = "Update a specific product")]
     public async Task<ActionResult> UpdateAsync(int id, [FromBody] ProductCreateEditRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -69,6 +74,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [SwaggerOperation(Summary = "Delete a specific product")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
         if (!ModelState.IsValid)
@@ -80,6 +86,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("categories")]
+    [SwaggerOperation(Summary = "Retrieve all product categories")]
     public async Task<ActionResult> GetCategoriesAsync()
     {
         if (!ModelState.IsValid)
@@ -91,6 +98,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("category/{category}")]
+    [SwaggerOperation(Summary = "Retrieve products in a specific category")]
     public async Task<ActionResult> GetCategoriesAsync(string category, int page = 1, int size = 10, string order = "id desc")
     {
         if (!ModelState.IsValid)

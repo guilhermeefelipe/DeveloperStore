@@ -2,6 +2,7 @@
 using DeveloperStore.Services.Carts;
 using DeveloperStore.Services.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace DeveloperStore.UI.Controllers;
 
@@ -17,6 +18,7 @@ public class CartsController : ControllerBase
     }
 
     [HttpGet()]
+    [SwaggerOperation(Summary = "Retrieve a list of all carts")]
     public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
     {
         var list = await cartsService.GetPagedListAsync(page, size, order);
@@ -25,6 +27,7 @@ public class CartsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Retrieve a specific cart by ID")]
     public async Task<ActionResult> GetAsync(int id)
     {
         if (!ModelState.IsValid)
@@ -36,6 +39,7 @@ public class CartsController : ControllerBase
     }
 
     [HttpPost()]
+    [SwaggerOperation(Summary = "Add a new cart")]
     public async Task<ActionResult> CreateAsync([FromBody] CartCreateEditRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -50,6 +54,7 @@ public class CartsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [SwaggerOperation(Summary = "Update a specific cart")]
     public async Task<ActionResult> UpdateAsync(int id, [FromBody] CartCreateEditRequestDto request)
     {
         var Cart = await cartsService.UpdateAsync(id, request);
@@ -61,6 +66,7 @@ public class CartsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [SwaggerOperation(Summary = "Delete a specific cart")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
         await cartsService.DeleteAsync(id);

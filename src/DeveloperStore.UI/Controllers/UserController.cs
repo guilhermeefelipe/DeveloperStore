@@ -19,6 +19,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet()]
+    [SwaggerOperation(Summary = "Retrieve a list of all users")]
     public async Task<ActionResult> GetPagedListAsync(int page = 1, int size = 10, string order = "id desc")
     {
         if (!ModelState.IsValid)
@@ -30,6 +31,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Retrieve a specific user by ID")]
     public async Task<ActionResult> GetAsync(int id)
     {
         if (!ModelState.IsValid)
@@ -41,6 +43,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost()]
+    [SwaggerOperation(Summary = "Add a new user")]
     public async Task<ActionResult> CreateAsync([FromBody] UserCreateEditRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -55,6 +58,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [SwaggerOperation(Summary = "Update a specific user")]
     public async Task<ActionResult> UpdateAsync(int id, [FromBody] UserCreateEditRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -69,6 +73,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [SwaggerOperation(Summary = "Delete a specific user")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
         if (!ModelState.IsValid)
